@@ -160,6 +160,13 @@ def handle_host(host):
         ssh.close()
         del ssh
 
+    # Creating/adding to csv
+    last_refill = {"Last refill": last_refill}
+    dispensed_365 = {"Dispensed last 365 days": dispensed_365}
+    dispensed_2021 = {"Dispensed in 2021": dispensed_2021}
+    shop_location = {"Shop location": shop_location}
+
+
 
 # Thread processing method
 def process_addresses(lst, num_items, list_lock, write_lock):
