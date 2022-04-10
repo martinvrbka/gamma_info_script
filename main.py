@@ -4,6 +4,8 @@ from threading import Lock, Thread
 import base64
 import binascii
 import paramiko
+import csv
+import io
 import os
 import sys
 import time
@@ -125,9 +127,10 @@ def handle_host(host):
                     index = int(canister.attributes['id'].value)
                     level = float(canister.attributes['cur_q'].value)
                     data[index] = (cnt_code, level)
-
+            colorant_levels = []
             for index in sorted(data.keys()):
                 cnt_code, level = data[index]
+                colorant_levels.append('%d - %s - %.2f ml' % (index, cnt_code, level,))
                 print('%d - %s - %.2f ml' % (index, cnt_code, level,))
         except:
             colorant_levels = "No colorant levels present"
@@ -156,15 +159,25 @@ def handle_host(host):
         pos_formula = [db for db in dir_content if db in pos_databases]
         print(pos_formula)
 
+        if pos_formula or sn or colorant_levels == []:
+            raise Exception("Value is missing")
+
     finally:
         ssh.close()
         del ssh
 
     # Creating/adding to csv
-    last_refill = {"Last refill": last_refill}
-    dispensed_365 = {"Dispensed last 365 days": dispensed_365}
-    dispensed_2021 = {"Dispensed in 2021": dispensed_2021}
-    shop_location = {"Shop location": shop_location}
+    data = [shop_location, pos_formula, sn, colorant_levels, last_refill, dispensed_365, dispensed_2021]
+
+    with io.open('%s.csv' % (host,), 'wb') as file:
+        keys = ['Shop location', 'POS Formula', 'Machine serial number', 'Colorant levels', 'Last refill',
+                'Dispensed last 365 days', 'Dispensed in 2021']
+        writer = csv.writer(file)
+        writer.writerow(keys)
+        for d in data:
+            writer.writerow(d)
+
+
 
 
 
